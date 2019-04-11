@@ -14,7 +14,8 @@ import java.util.concurrent.ThreadLocalRandom
  * @param data  An array containing the recorded data of the time series
  * @param alpha Smoothing factor for data. Closer to 1 means bias more from recent values.
  * @param beta  Smoothing factor for trend.  Closer to 1 means trend decays faster
- * @return Instance of model that can be used to forecast future values
+ *
+ * @return Instance of model that can be used to get current smoothed value and forecast future values
  */
 class DoubleExponentialSmoothing(private var data: FloatArray, alpha: Float = 0.8f, beta: Float = 0.2f) {
 
@@ -50,7 +51,6 @@ class DoubleExponentialSmoothing(private var data: FloatArray, alpha: Float = 0.
     fun getSmoothedLatest() = smoothedData.last()
 
     fun getSSError() = data.indices.sumByDouble { (smoothedData[it] - data[it]).let { err -> err * err }.toDouble() }
-
 
     companion object {
         /** Grid search, slow as heck. */

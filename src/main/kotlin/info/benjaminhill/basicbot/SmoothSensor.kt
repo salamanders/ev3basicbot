@@ -10,9 +10,10 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  *
- * Use DoubleExponentialSmoothing to get "better" samples without too much delay.
+ * Use DoubleExponentialSmoothing to get "better" samples without too much CPU overhead.
  * Always be sampling to stay up-to-date, throwing values into a Ring Buffer.
- * Calibration happens automatically on a timer after init.  Can sample even before calibrated.
+ * If not enough history yet, will return most recent sample.
+ *
  * @see <a href="http://www.lejos.org/ev3/docs/index.html?lejos/hardware/sensor/package-summary.html">LeJOS Sensor API</a>
  */
 class SmoothSensor(private val sensor: BaseSensor, private val mode: SampleProvider) : AutoCloseable, CoroutineScope {
@@ -61,9 +62,8 @@ class SmoothSensor(private val sensor: BaseSensor, private val mode: SampleProvi
     }
 
     /**
-     * If uncalibrated, return last sample
-     * Else if closer to last sample, smoothed last sample
-     * Else forecast to future
+     * If not enough history, return last raw sample
+     * Else find the point between last smoothed sample and estimated future to get "now"
      */
     fun get(): Float = if (sampleCount < HISTORY_SIZE) {
         directSampleCount++
@@ -93,7 +93,7 @@ class SmoothSensor(private val sensor: BaseSensor, private val mode: SampleProvi
 
     companion object {
         const val SAMPLE_DELAY_MS = 100L
-        const val HISTORY_SIZE = 10 // 1 second worth
+        const val HISTORY_SIZE = 1_000 / SAMPLE_DELAY_MS.toInt() // 1 second worth
         private val LOG = KotlinLogging.logger {}
     }
 }
