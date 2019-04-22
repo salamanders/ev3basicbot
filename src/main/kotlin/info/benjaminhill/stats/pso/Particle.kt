@@ -7,8 +7,16 @@ import kotlin.random.Random
  *
  * Construct a Particle with a random starting position.
  * @param function OptimizableFunction to work on
+ * @param inertiaC resistance to change
+ * @param cognitiveC amount to move towards your own best
+ * @param socialC amount to move towards global best
  */
-internal class Particle(private val function: OptimizableFunction) {
+internal class Particle(
+    private val function: OptimizableFunction,
+    private val inertiaC: Double = 0.0,
+    private val cognitiveC: Double = 0.0,
+    private val socialC: Double = 0.0
+) {
 
     /** Random location *starting* within the allowed domain */
     val position: Vector = function.newRandomVector()
@@ -38,14 +46,10 @@ internal class Particle(private val function: OptimizableFunction) {
     }
 
     /**
-     * @param particle  the particle to update the velocity
+     *
+     * @param globalBest + socialC move towards this
      */
-    fun updateVelocity(
-        globalBest: Particle,
-        inertiaC: Double,
-        cognitiveC: Double,
-        socialC: Double
-    ) {
+    fun updateVelocityAndPosition(globalBest: Particle) {
         // Natural friction
         velocity *= inertiaC
 
@@ -64,14 +68,11 @@ internal class Particle(private val function: OptimizableFunction) {
             gBest *= Random.nextDouble()
             velocity += gBest
         }
-    }
 
-    /**
-     * Update the position of a particle by adding its velocity to its position.
-     */
-    fun updatePosition() {
+        // Time to move
         this.position += velocity
     }
+
 
     override fun toString(): String = "{pos:$position, v:$velocity, bestPos:$bestPosition, bestEval:$bestEval}"
 }

@@ -1,28 +1,50 @@
 package info.benjaminhill.basicbot
 
-import kotlinx.coroutines.runBlocking
+import lejos.hardware.Battery
+import lejos.hardware.port.SensorPort
+import lejos.hardware.sensor.EV3IRSensor
+import lejos.utility.Delay
+
 import mu.KotlinLogging
 
 private val LOG = KotlinLogging.logger {}
 
-fun main() = runBlocking {
+fun main() {
     LOG.info { "debug:${LOG.isDebugEnabled}" }
 
-    BasicBot().use { bot ->
-        LOG.info { "Time to dance." }
 
+    val ir1 = EV3IRSensor(SensorPort.S3)
 
-        repeat(3) {
-            LOG.info { "Before rotation: $bot" }
-            bot.distanceSensor.startRecording()
-            bot.turnLeft(360)
-            val distances = bot.distanceSensor.stopRecording()
-            println(distances.joinToString())
-            bot.turnRight(90)
-            LOG.info { "After rotation: $bot" }
-        }
+    println(Battery.getVoltageMilliVolt())
 
+    val sp = ir1.distanceMode
+
+    //Control loop
+    for (i in 0..50) {
+        val sample = FloatArray(sp.sampleSize())
+        sp.fetchSample(sample, 0)
+        println("$i: ${sample[0]}")
+        Delay.msDelay(500)
     }
-    LOG.info { "main: exiting app." }
 }
+
+
+/*
+BasicBot().use { bot ->
+    LOG.info { "Time to dance." }
+    bot.run()
+    bot.turn(360 * 4)
+
+    delay(5 * 1_000)
+    bot.stop()
+
+    println(BotState.headerTsv())
+
+    bot.getHistory().sortedBy { it.ms }.forEach { state ->
+        println(state.toTsv())
+    }
+}
+LOG.info { "main: exiting app." }
+ */
+
 
